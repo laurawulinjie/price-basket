@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProducts, updateBasketItem } from "@/lib/api";
+import { getOffers, getProducts, updateBasketItem } from "@/lib/api";
 
 type Product = {
   name: string;
@@ -11,9 +11,11 @@ type Product = {
 
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [offers, setOffers] = useState<string[]>([]);
 
   useEffect(() => {
     getProducts().then(setProducts);
+    getOffers().then(setOffers);
   }, []);
 
   const handleAddToBasket = async (product: Product) => {
@@ -24,6 +26,15 @@ export default function HomePage() {
   return (
     <main className="p-6">
       <h1 className="text-3xl font-bold mb-6">Shop Products</h1>
+
+      <div className="mb-6">
+        <ul className="list-disc pl-6">
+          {offers.map((offer, i) => (
+            <li key={i}>{offer}</li>
+          ))}
+        </ul>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {products.map((product) => (
           <div key={product.name} className="border p-4 rounded shadow">
