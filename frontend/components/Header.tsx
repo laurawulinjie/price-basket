@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useBasket } from "@/context/BasketContext";
 
 export default function Header() {
   const pathname = usePathname();
+  const { itemCount } = useBasket();
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Basket", href: "/basket" },
+    { name: `Basket (${itemCount})`, href: "/basket" },
   ];
 
   return (

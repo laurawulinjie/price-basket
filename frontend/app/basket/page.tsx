@@ -1,59 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  getBasketItems,
-  getBasketPrice,
-  updateBasketItem,
-  resetBasket,
-} from "@/lib/api";
+import Link from "next/link";
+import { useBasket } from "@/context/BasketContext";
 
 export default function BasketPage() {
-  const [items, setItems] = useState<[string, number][]>([]);
-  const [price, setPrice] = useState<{
-    subtotal: number;
-    discount: number;
-    discountInfo?: string;
-    total: number;
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { items, price, updateItem, reset } = useBasket();
 
-  const refreshBasket = async () => {
-    setLoading(true);
-    const [basketItems, priceInfo] = await Promise.all([
-      getBasketItems(),
-      getBasketPrice(),
-    ]);
-    setItems(basketItems);
-    setPrice(priceInfo[0]);
-    setLoading(false);
+  const filteredItems = items.filter(([, count]) => count > 0);
+
+  const handleChange = (name: string, count: number) => {
+    if (count < 0) return;
+    updateItem(name, count);
   };
 
-  useEffect(() => {
-    refreshBasket();
-  }, []);
-
-  const handleQuantityChange = async (name: string, count: number) => {
-    await updateBasketItem(name, count);
-    refreshBasket();
+  const handleRemove = (name: string) => {
+    updateItem(name, 0);
   };
-
-  const handleReset = async () => {
-    await resetBasket();
-    refreshBasket();
-  };
-
-  if (loading) return <p className="p-4">Loading basket...</p>;
 
   return (
     <main className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Your Basket</h1>
+      <h1 className="text-3xl font-bold mb-6">Checkout</h1>
 
-      {items.length === 0 ? (
-        <p>Your basket is empty.</p>
+      {filteredItems.length === 0 ? (
+        <div className="mb-6">
+          <p>Your basket is empty.</p>
+
+          <Link href="/" className="text-blue-600 hover:underline">
+            View available products
+          </Link>
+        </div>
       ) : (
         <div className="space-y-4 mb-6">
-          {items.map(([name, count]) => (
+          {filteredItems.map(([name, count]) => (
             <div
               key={name}
               className="flex justify-between items-center border p-4 rounded shadow-sm"
@@ -61,15 +39,35 @@ export default function BasketPage() {
               <div>
                 <p className="font-medium">{name}</p>
               </div>
-              <input
-                type="number"
-                value={count}
-                min={0}
-                className="w-20 text-center border rounded p-1"
-                onChange={(e) =>
-                  handleQuantityChange(name, parseInt(e.target.value, 10))
-                }
-              />
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleChange(name, count - 1)}
+                  className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400"
+                >
+                  –
+                </button>
+                <input
+                  type="number"
+                  value={count}
+                  min={0}
+                  className="w-16 text-center border rounded p-1"
+                  onChange={(e) =>
+                    handleChange(name, parseInt(e.target.value, 10))
+                  }
+                />
+                <button
+                  onClick={() => handleChange(name, count + 1)}
+                  className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400"
+                >
+                  +
+                </button>
+                <button
+                  onClick={() => handleRemove(name)}
+                  className="ml-2 text-red-500 text-sm hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -96,12 +94,14 @@ export default function BasketPage() {
         </p>
       </div>
 
-      <button
-        onClick={handleReset}
-        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-      >
-        Reset Basket
-      </button>
+      {filteredItems.length > 0 && (
+        <button
+          onClick={reset}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Reset Basket
+        </button>
+      )}
     </main>
   );
 }
