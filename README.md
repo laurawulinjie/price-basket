@@ -57,7 +57,7 @@ App available at `http://localhost:3000`
 
 - Apples → 10% discount
 - Buy 2 Soups → get 1 Bread at half price
-  All discounts are calculated dynamically on the backend.
+- All discounts are calculated dynamically on the backend.
 
 ## 💡 Future Improvements
 
